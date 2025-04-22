@@ -1,0 +1,72 @@
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.17.2
+  name: migrationjobs.migration.kaleido.io
+spec:
+  group: migration.kaleido.io
+  names:
+    kind: MigrationJob
+    listKind: MigrationJobList
+    plural: migrationjobs
+    singular: migrationjob
+  scope: Namespaced
+  versions:
+  - name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: MigrationJob is the Schema for the migrationjobs API.
+        properties:
+          apiVersion:
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+            type: string
+          kind:
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: MigrationJobSpec defines the desired state of MigrationJob.
+            properties:
+              podName:
+                description: The name of pod to migrate.
+                type: string
+              podNamespace:
+                description: The namespace of the pod to migrate.
+                type: string
+              sourceNode:
+                description: The source node to migrate from.
+                type: string
+              targetNode:
+                description: The target node to migrate to.
+                type: string
+            required:
+            - podName
+            - sourceNode
+            - targetNode
+            type: object
+          status:
+            description: MigrationJobStatus defines the observed state of MigrationJob.
+            properties:
+              phase:
+                description: The current phase of the migration job.
+                type: string
+            required:
+            - phase
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}

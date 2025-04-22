@@ -1,0 +1,11 @@
+apiVersion: migration.kaleido.io/v1alpha1
+kind: MigrationJob
+metadata:
+  labels:
+    app.kubernetes.io/name: kaleido
+    app.kubernetes.io/managed-by: kustomize
+  name: migrationjob-sample
+spec:
+  sourceNode: 10.2.3.222
+  targetNode: 10.2.3.200
+  podName: nginx

@@ -1,0 +1,115 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kaleido-controller
+  namespace: default
+  labels:
+    control-plane: kaleido-controller
+    app.kubernetes.io/name: kaleido
+    app.kubernetes.io/managed-by: kustomize
+spec:
+  selector:
+    matchLabels:
+      control-plane: kaleido-controller
+      app.kubernetes.io/name: kaleido
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        control-plane: kaleido-controller
+        app.kubernetes.io/name: kaleido
+    spec:
+      containers:
+      - command:
+        - /manager
+        args:
+          - --leader-elect
+          - --health-probe-bind-address=:8081
+        image: ccr.ccs.tencentyun.com/nack/kaleido-controller:v0.0.0
+        name: manager
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8081
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        readinessProbe:
+          httpGet:
+            path: /readyz
+            port: 8081
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        resources:
+          limits:
+            cpu: 500m
+            memory: 128Mi
+          requests:
+            cpu: 10m
+            memory: 64Mi
+        volumeMounts: []
+      volumes: []
+      serviceAccountName: kaleido-controller
+      terminationGracePeriodSeconds: 10
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app.kubernetes.io/name: kaleido
+    app.kubernetes.io/managed-by: kustomize
+  name: kaleido-controller
+  namespace: default
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  labels:
+    app.kubernetes.io/name: kaleido
+    app.kubernetes.io/managed-by: kustomize
+  name: kaleido-controller-rolebinding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: kaleido-controller-role
+subjects:
+- kind: ServiceAccount
+  name: kaleido-controller
+  namespace: default
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/name: kaleido
+    app.kubernetes.io/managed-by: kustomize
+  name: kaleido-controller-role
+rules:
+- apiGroups:
+  - migration.kaleido.io
+  resources:
+  - migrationjobs
+  verbs:
+  - '*'
+- apiGroups:
+  - migration.kaleido.io
+  resources:
+  - migrationjobs/status
+  verbs:
+  - get
+  - update
+  - patch
+- apiGroups:
+  - coordination.k8s.io
+  resources:
+  - leases
+  verbs:
+  - get
+  - create
+  - update
+- apiGroups:
+  - ""
+  resources:
+  - events
+  verbs:
+  - create
+  - patch
